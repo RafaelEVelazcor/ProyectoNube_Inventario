@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Inventario</title>
+    <link rel="stylesheet" href="../Styles/Styles.css">
+</head>
+<body>
+    <!-- Modal de Login - Solo botón -->
+    <div id="loginModal" class="login-modal">
+        <div class="login-container">
+            <h2>🔐 Sistema de Inventario</h2>
+            <p>Por favor, inicia sesión para continuar</p>
+            <button id="signIn" class="login-button">Iniciar Sesión con Cognito</button>
+            <div id="loginAlert" class="alert" style="display:none;"></div>
+        </div>
+    </div>
+
+    <div id="app" style="display:none;">
+        <div class="header">
+            <h1>Sistema de Inventario Profesional</h1>
+            <button id="logoutBtn" class="logout-btn">Cerrar Sesión</button>
+        </div>
+
+    <div class="container">
+        <div id="alert" class="alert"></div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('products')">Productos</button>
+            <button class="tab" onclick="switchTab('movements')">Movimientos</button>
+            <button class="tab" onclick="switchTab('reports')">Reportes</button>
+        </div>
+
+        <!-- TAB: PRODUCTOS -->
+        <div id="products-tab" class="content tab-content active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="total-products-count">0</div>
+                    <div class="stat-label">Total Productos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="low-stock-count">0</div>
+                    <div class="stat-label">Stock Bajo</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="total-inventory-value">$0</div>
+                    <div class="stat-label">Valor Total Inventario</div>
+                </div>
+            </div>
+
+            <!-- Alertas de productos con stock bajo -->
+            <div id="low-stock-list" class="low-stock-alerts"></div>
+
+            <div class="form-section">
+                <h2 id="formTitle">➕ Agregar Producto</h2>
+                <form id="productForm">
+                    <input type="hidden" id="editProductId">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="productSKU">SKU *</label>
+                            <input type="text" id="productSKU" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="productName">Nombre *</label>
+                            <input type="text" id="productName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="productCategory">Categoría</label>
+                            <select id="productCategory">
+                                <option value="">Seleccionar categoría</option>
+                                <option value="Cuidado Personal">Cuidado Personal</option>
+                                <option value="Electrónica">Electrónica</option>
+                                <option value="Ropa">Ropa</option>
+                                <option value="Alimentos">Alimentos</option>
+                                <option value="Hogar">Hogar</option>
+                                <option value="Deportes">Deportes</option>
+                                <option value="Otros">Otros</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="currentStock">Stock Actual *</label>
+                            <input type="number" id="currentStock" min="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="unitPrice">Precio Unitario ($) *</label>
+                            <input type="number" id="unitPrice" step="0.01" min="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="costPrice">Precio de Costo ($)</label>
+                            <input type="number" id="costPrice" step="0.01" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="minStock">Stock Mínimo</label>
+                            <input type="number" id="minStock" min="0" value="10">
+                        </div>
+                        <div class="form-group">
+                            <label for="maxStock">Stock Máximo</label>
+                            <input type="number" id="maxStock" min="0" value="100">
+                        </div>
+                        <div class="form-group">
+                            <label for="barcode">Código de Barras</label>
+                            <input type="text" id="barcode">
+                        </div>
+                        <div class="form-group">
+                            <label for="imageUrl">URL de Imagen</label>
+                            <input type="url" id="imageUrl" placeholder="https://example.com/imagen.jpg">
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="isActive" checked>
+                                Producto Activo
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="productDescription">Descripción</label>
+                        <textarea id="productDescription" rows="3" placeholder="Descripción detallada del producto..."></textarea>
+                    </div>
+                    <button type="submit" id="submitBtn">Agregar Producto</button>
+                
+                    <button type="button" class="btn-secondary" id="cancelBtn" style="display:none;" onclick="cancelEdit()">Cancelar</button>
+                </form>
+            </div>
+
+            <div class="search-bar">
+                <div class="search-container">
+                    <input type="text" id="searchInput" placeholder="🔍 Buscar productos por nombre, descripción o categoría...">
+                   
+                </div>
+            </div>
+
+            <div id="loadingProducts" class="loading" style="display:none;">
+                Cargando productos...
+            </div>
+
+            <!-- Lista de productos -->
+            <div id="products-list" class="products-container">
+                <!-- Los productos se cargarán aquí dinámicamente -->
+            </div>
+
+            <table id="productsTable" style="display:none;">
+                <thead>
+                    <tr>
+                        <th>SKU</th>
+                        <th>Nombre</th>
+                        <th>Categoría</th>
+                        <th>Cantidad</th>
+                        <th>Precio</th>
+                        <th>Valor Total</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="productsBody"></tbody>
+            </table>
+
+            <div id="emptyProducts" class="empty-state" style="display:none;">
+                <div class="empty-state-icon">📭</div>
+                <h3>No hay productos registrados</h3>
+                <p>Agrega tu primer producto usando el formulario de arriba</p>
+            </div>
+        </div>
+
+        <!-- TAB: MOVIMIENTOS -->
+        <div id="movements-tab" class="content tab-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalMovimientos">0</div>
+                    <div class="stat-label">Total Movimientos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="entradasTotal">0</div>
+                    <div class="stat-label">Entradas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="salidasTotal">0</div>
+                    <div class="stat-label">Salidas</div>
+                </div>
+            </div>
+
+            <!-- Formulario para agregar movimiento -->
+            <div class="form-section">
+                <h2 id="movementFormTitle">➕ Registrar Movimiento</h2>
+                <form id="movementForm">
+                    <input type="hidden" id="editMovementId">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="productId">ID del Producto *</label>
+                            <input type="text" id="productId" required placeholder="prod-a082238695d6">
+                            <small>Ingresa el ID del producto para el movimiento</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="movementType">Tipo de Movimiento *</label>
+                            <select id="movementType" required>
+                                <option value="">Seleccionar tipo</option>
+                                <option value="ENTRADA">Entrada</option>
+                                <option value="SALIDA">Salida</option>
+                                <option value="AJUSTE">Ajuste</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="movementQuantity">Cantidad *</label>
+                            <input type="number" id="movementQuantity" required min="1" step="1">
+                        </div>
+                        <div class="form-group">
+                            <label for="unitCost">Costo Unitario ($)</label>
+                            <input type="number" id="unitCost" step="0.01" min="0" placeholder="129.99">
+                        </div>
+                        <div class="form-group">
+                            <label for="reference">Referencia</label>
+                            <input type="text" id="reference" placeholder="PO-4587">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="reason">Razón del Movimiento *</label>
+                        <input type="text" id="reason" required placeholder="Recepción de nuevo pedido del proveedor">
+                    </div>
+                    <div class="form-group">
+                        <label for="notes">Notas</label>
+                        <textarea id="notes" rows="3" placeholder="Notas adicionales sobre el movimiento..."></textarea>
+                    </div>
+                    <button type="submit" id="submitMovementBtn">Registrar Movimiento</button>
+                    <button type="button" class="btn-secondary" id="cancelMovementBtn" style="display:none;" onclick="cancelMovementEdit()">Cancelar</button>
+                </form>
+            </div>
+
+
+            <div id="loadingMovements" class="loading" style="display:none;">
+                Cargando movimientos...
+            </div>
+
+            <!-- Lista de movimientos -->
+            <div id="movements-list" class="movements-container">
+                <!-- Los movimientos se cargarán aquí dinámicamente -->
+            </div>
+
+            <table id="movementsTable" style="display:none;">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Producto</th>
+                        <th>Tipo</th>
+                        <th>Cantidad</th>
+                        <th>Anterior</th>
+                        <th>Nueva</th>
+                        <th>Razón</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="movementsBody"></tbody>
+            </table>
+
+            <div id="emptyMovements" class="empty-state" style="display:none;">
+                <div class="empty-state-icon">📊</div>
+                <h3>No hay movimientos registrados</h3>
+                <p>Los movimientos se registran automáticamente al crear o modificar productos</p>
+            </div>
+        </div>
+
+        <!-- TAB: REPORTES -->
+        <div id="reports-tab" class="content tab-content">
+            <h2>📈 Generar Reporte de Movimientos</h2>
+            
+            <div class="form-section">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="reportStartDate">Fecha Inicio *</label>
+                        <input type="date" id="reportStartDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reportEndDate">Fecha Fin *</label>
+                        <input type="date" id="reportEndDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reportFormat">Formato</label>
+                        <select id="reportFormat">
+                            <option value="json">JSON</option>
+                            <option value="csv">CSV</option>
+                        </select>
+                    </div>
+                </div>
+                <button onclick="generateReport()">Generar Reporte</button>
+            </div>
+
+            <div id="reportResult" style="display:none;">
+                <h3>Resumen del Reporte</h3>
+                <div id="reportSummary" class="detail-grid"></div>
+                
+                <h3 style="margin-top: 30px;">Por Producto</h3>
+                <table id="reportTable" style="display:none;">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Total Entradas</th>
+                            <th>Total Salidas</th>
+                            <th>Cambio Neto</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Detalles -->
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+    </div> <!-- cierre de app -->
+
+    <script type="module" src="../dist/Index.js"></script>
+    <script type="module" src="../dist/ProductsPage.js"></script>
+    <script type="module" src="../dist/movementsPage.js"></script>
+    <script type="module" src="../dist/reportsPage.js"></script>
+</body>
+</html>
