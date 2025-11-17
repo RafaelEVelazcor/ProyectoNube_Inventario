@@ -95,7 +95,7 @@ const PORT = process.env.PORT || 3000;
 // Iniciar servidor
 const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ Servidor ejecutándose en puerto ${PORT}`);
-  console.log(`🌐 Accede a http://localhost:${PORT}`);
+  console.log(`🌐 Accede a http://ec2-54-85-246-162.compute-1.amazonaws.com:${PORT}`);
 });
 
 // Manejo de errores del servidor

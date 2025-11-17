@@ -7,10 +7,10 @@ const cognitoAuthConfig = {
     authority: "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_rNAarCaQI",
     client_id: "6gh6mi02h02dgli3adr2va12ev",
     client_secret: "1e3f3v5ujislchi1asgcfnbqtvoovhdf3d2ir513jhdsbl2e0ocj", // Tu client secret
-    redirect_uri: "http://localhost:3000/callback",
+    redirect_uri: "http://ec2-54-85-246-162.compute-1.amazonaws.com:3000/callback",
     response_type: "code",
     scope: "openid", // ✅ Solo openid para evitar invalid_scope
-    post_logout_redirect_uri: "http://localhost:3000/",
+    post_logout_redirect_uri: "http://ec2-54-85-246-162.compute-1.amazonaws.com:3000/",
     
     // ✅ Desactivar PKCE ya que usamos client_secret
     usePkce: false,

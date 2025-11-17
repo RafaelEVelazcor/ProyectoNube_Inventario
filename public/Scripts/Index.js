@@ -271,7 +271,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 
                 // Hacer redirect manual a Cognito sin usar OIDC
                 const clientId = "6gh6mi02h02dgli3adr2va12ev";
-                const redirectUri = encodeURIComponent("http://localhost:3000/callback");
+                const redirectUri = encodeURIComponent("http://ec2-54-85-246-162.compute-1.amazonaws.com:3000/callback");
                 const responseType = "code";
                 const scope = encodeURIComponent("openid email");
                 
