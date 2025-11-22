@@ -29,7 +29,7 @@ async function handleCallback() {
         const tokenEndpoint = 'https://us-east-1rnaarcaqi.auth.us-east-1.amazoncognito.com/oauth2/token';
         const clientId = '6gh6mi02h02dgli3adr2va12ev';
         const clientSecret = '1e3f3v5ujislchi1asgcfnbqtvoovhdf3d2ir513jhdsbl2e0ocj';
-        const redirectUri = 'http://localhost:3000/callback';
+        const redirectUri = 'http://ec2-54-85-246-162.compute-1.amazonaws.com:3000/callback';
         
         // Preparar datos para el intercambio
         const tokenData = new URLSearchParams({
