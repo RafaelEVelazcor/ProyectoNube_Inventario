@@ -1,0 +1,23 @@
+{
+  "name": "proyecto-nube-inventario",
+  "version": "1.0.0",
+  "description": "Inventory management system",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "build": "node build.js",
+    "build:watch": "node build.js --watch",
+    "start": "node server.js",
+    "dev": "npm run build:watch"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "fs": "^0.0.1-security",
+    "node": "^25.2.0",
+    "node-fetch": "^3.3.2",
+    "oidc-client-ts": "^3.4.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.19.5"
+  }
+}
